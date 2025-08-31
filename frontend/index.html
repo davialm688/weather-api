@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima Agora - Previsão do Tempo</title>
+    <link rel="stylesheet" href="./styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-cloud-sun"></i> Clima Agora</h1>
+            <p>Consulte a previsão do tempo para qualquer cidade</p>
+        </header>
+
+        <main class="main-content">
+            <div class="search-container">
+                <div class="input-group">
+                    <input type="text" id="city-input" placeholder="Digite o nome da cidade...">
+                    <button id="search-btn">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="weather-card hidden" id="weather-card">
+                <div class="weather-header">
+                    <h2 id="city-name">Cidade</h2>
+                    <p id="current-date">Data</p>
+                </div>
+                
+                <div class="weather-main">
+                    <div class="temperature-section">
+                        <div class="weather-icon" id="weather-icon">
+                            <img src="assets/icons/default.svg" alt="Clima">
+                        </div>
+                        <div class="temperature" id="temperature">--°C</div>
+                        <div class="weather-description" id="weather-description">Descrição</div>
+                    </div>
+                    
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <i class="fas fa-temperature-high"></i>
+                            <div class="detail-info">
+                                <span>Sensação Térmica</span>
+                                <span id="feels-like">--°C</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-tint"></i>
+                            <div class="detail-info">
+                                <span>Umidade</span>
+                                <span id="humidity">--%</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-wind"></i>
+                            <div class="detail-info">
+                                <span>Vento</span>
+                                <span id="wind-speed">-- km/h</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                            <div class="detail-info">
+                                <span>Pressão</span>
+                                <span id="pressure">-- hPa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-message hidden" id="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Não foi possível obter os dados do clima. Tente novamente.</p>
+            </div>
+
+            <div class="loading hidden" id="loading">
+                <div class="spinner"></div>
+                <p>Buscando dados...</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Desenvolvido com <i class="fas fa-heart"></i> usando a OpenWeather API</p>
+        </footer>
+    </div>
+
+    <script src="./scripts/main.js"></script>
+</body>
+</html>
