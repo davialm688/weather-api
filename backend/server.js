@@ -13,9 +13,15 @@ const weatherRoutes = require('./src/routes/weatherRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuração do CORS - Permite várias origens para desenvolvimento
+// Configuração do CORS - Permite várias origens para desenvolvimento e produção
 const corsOptions = {
-  origin: ['http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:8000'],
+  origin: [
+    'http://localhost:8000', 
+    'http://127.0.0.1:5500', 
+    'http://localhost:5500',
+    'http://127.0.0.1:8000',
+    'https://seu-app.netlify.app'  // ← SERÁ ATUALIZADO DEPOIS
+  ],
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type']
 };

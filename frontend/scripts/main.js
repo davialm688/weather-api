@@ -1,6 +1,9 @@
 class WeatherApp {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:3000';
+        // URL dinâmica para produção/desenvolvimento
+        this.apiBaseUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000'
+            : 'https://weather-api-backend-production.up.railway.app'; // ← SERÁ ATUALIZADO DEPOIS
         this.cityInput = document.getElementById('city-input');
         this.searchBtn = document.getElementById('search-btn');
         this.weatherCard = document.getElementById('weather-card');
