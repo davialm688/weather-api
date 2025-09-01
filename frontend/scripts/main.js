@@ -114,9 +114,10 @@ class WeatherApp {
                 throw new Error(data.message || 'Cidade não encontrada');
             }
             
-            // ✅ VERIFICA SE OS DADOS SÃO VÁLIDOS (não veio do mock)
+            // ✅ VERIFICAÇÃO DE MOCK MELHORADA (menos agressiva)
             if (this.isMockData(data)) {
-                throw new Error('Cidade não encontrada. Verifique o nome e tente novamente.');
+                console.warn('Dados mock detectados, mas mostrando mesmo assim para:', data.name);
+                // Não lança erro, apenas mostra warning
             }
             
             this.displayWeatherData(data);
@@ -129,13 +130,19 @@ class WeatherApp {
         }
     }
     
-    // ✅ DETECTA SE SÃO DADOS MOCK (simulados)
+    // ✅ DETECTA SE SÃO DADOS MOCK (VERSÃO MELHORADA)
     isMockData(data) {
-        // Verifica se tem campos indicativos de mock
-        const isMock = data.lastUpdated && 
-                      data.main.temp >= 20 && 
-                      data.main.temp <= 35 &&
-                      data.name === this.cityInput.value.trim();
+        // Se não tem dados básicos, não é mock nem real
+        if (!data || !data.main || !data.weather) return false;
+        
+        // Dados reais da OpenWeatherMap têm estes campos
+        const hasRealDataIndicators = data.sys && data.sys.country && data.weather[0].id;
+        
+        // Dados mock têm nosso campo personalizado
+        const hasMockIndicator = data.lastUpdated;
+        
+        // É mock se tem o indicador mock mas não os indicadores reais
+        const isMock = hasMockIndicator && !hasRealDataIndicators;
         
         if (isMock) {
             console.warn('Dados mock detectados para:', data.name);
