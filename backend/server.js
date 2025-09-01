@@ -20,7 +20,8 @@ const corsOptions = {
     'http://127.0.0.1:5500', 
     'http://localhost:5500',
     'http://127.0.0.1:8000',
-    'https://seu-app.netlify.app'  // ← SERÁ ATUALIZADO DEPOIS
+    'https://apitempo.netlify.app',  // ← SEU FRONTEND NO NETLIFY
+    'https://*.netlify.app'           // ← TODOS OS DOMÍNIOS NETLIFY
   ],
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type']
