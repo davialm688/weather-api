@@ -14,7 +14,6 @@ class WeatherService {
     const cacheKey = city.toLowerCase();
     
     try {
-      // Verificar se temos uma chave de API válida
       if (!this.apiKey || this.apiKey === 'sua_chave_api_aqui') {
         logger.warn('Chave API não configurada, usando dados simulados');
         return this.getMockWeatherData(city);
@@ -27,10 +26,14 @@ class WeatherService {
       const response = await axios.get(url, { timeout: 10000 });
       
       if (response.data && response.data.cod === 200) {
+        // ✅ VERIFICA SE É UMA CIDADE VÁLIDA
+        if (this.isInvalidCity(response.data)) {
+          throw new Error('Cidade não encontrada');
+        }
+        
         const weatherData = new WeatherData(response.data);
         const dataToCache = weatherData.toJSON();
         
-        // Salvar no cache
         await cache.set(cacheKey, dataToCache);
         
         return dataToCache;
@@ -40,15 +43,42 @@ class WeatherService {
     } catch (error) {
       logger.error(`Erro ao buscar dados da API: ${error.message}`);
       
-      // Fallback para dados simulados em caso de erro
+      // ✅ NÃO RETORNA MOCK PARA CIDADES INVÁLIDAS
+      if (this.isObviouslyInvalidCity(city)) {
+        throw new Error('Cidade não encontrada');
+      }
+      
       return this.getMockWeatherData(city);
     }
+  }
+
+  // ✅ VERIFICA SE É UMA CIDADE VÁLIDA
+  isInvalidCity(data) {
+    return !data || 
+           !data.name || 
+           !data.main || 
+           !data.weather ||
+           data.name === 'Globe' || // Resposta genérica da API
+           data.sys.country === 'N/A';
+  }
+
+  // ✅ DETECTA CIDADES OBVIAMENTE INVÁLIDAS
+  isObviouslyInvalidCity(city) {
+    const invalidPatterns = [
+      /(.)\1{4,}/, // Muitos caracteres repetidos
+      /^[^a-zA-ZÀ-ÿ]+$/, // Nenhuma letra válida
+      /^[0-9]+$/, // Apenas números
+      /teste?/, // Palavras de teste
+      /asdf|qwer|zxcv/, // Sequências de teclado
+    ];
+    
+    return invalidPatterns.some(pattern => pattern.test(city.toLowerCase()));
   }
 
   getMockWeatherData(city) {
     logger.info(`Usando dados simulados para: ${city}`);
     
-    // Dados simulados para fallback
+    // ✅ MOCK MAIS REALISTA APENAS PARA FALLBACK LEGÍTIMO
     const mockData = {
       name: city,
       country: 'BR',
@@ -57,7 +87,7 @@ class WeatherService {
         { id: 800, main: 'Clear', description: 'céu limpo', icon: '01d' }
       ],
       main: {
-        temp: Math.round(Math.random() * 15 + 20), // 20-35°C
+        temp: Math.round(Math.random() * 15 + 20),
         feels_like: Math.round(Math.random() * 15 + 20),
         temp_min: Math.round(Math.random() * 10 + 15),
         temp_max: Math.round(Math.random() * 10 + 25),

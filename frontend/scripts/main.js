@@ -20,9 +20,8 @@ class WeatherApp {
         });
     }
     
-    // ✅ NOVA FUNÇÃO: Validar nome da cidade
+    // ✅ VALIDAÇÃO AVANÇADA PARA CIDADES REAIS
     isValidCityName(city) {
-        // Remove espaços extras
         const trimmedCity = city.trim();
         
         // Verifica se está vazio
@@ -35,9 +34,9 @@ class WeatherApp {
             return { isValid: false, message: 'O nome da cidade não pode conter números.' };
         }
         
-        // Verifica se tem caracteres especiais (permite acentos, hífens, espaços e apóstrofos)
-        if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(trimmedCity)) {
-            return { isValid: false, message: 'Use apenas letras, espaços, hífens e apóstrofos.' };
+        // Verifica caracteres especiais (permite acentos, hífens, espaços, apóstrofos e pontos)
+        if (!/^[a-zA-ZÀ-ÿ\s\-',.]+$/.test(trimmedCity)) {
+            return { isValid: false, message: 'Use apenas letras, espaços, hífens, apóstrofos e pontos.' };
         }
         
         // Verifica comprimento mínimo
@@ -47,7 +46,29 @@ class WeatherApp {
         
         // Verifica comprimento máximo
         if (trimmedCity.length > 50) {
-            return { isValid: false, message: 'O nome da cidade é muito longo.' };
+            return { isValid: false, message: 'O nome da cidade é muito longo (máx. 50 caracteres).' };
+        }
+        
+        // ✅ VALIDAÇÃO CONTRA NOMES ABSURDOS
+        const invalidPatterns = [
+            /(.)\1{4,}/, // Muitos caracteres repetidos (ex: kkkkk, aaaaa)
+            /^[^a-zA-ZÀ-ÿ]+$/, // Nenhuma letra válida
+            /(.{3,}).*\1.*\1/, // Padrões repetitivos
+            /^[xX]+$/, // Apenas X's
+            /^(asdf|qwer|zxcv|teste|abcde|aaaaa|kkkkk)+$/i, // Sequências comuns inválidas
+            /^[^aeiouAEIOUÀ-ÿ]{8,}$/, // Muitas consoantes seguidas
+        ];
+        
+        if (invalidPatterns.some(pattern => pattern.test(trimmedCity))) {
+            return { isValid: false, message: 'Por favor, digite um nome de cidade válido.' };
+        }
+        
+        // ✅ VERIFICA SE PARECE COM NOME DE CIDADE REAL
+        const hasValidStructure = /[aeiouÀ-ÿ]{2,}/i.test(trimmedCity) && // Pelo menos 2 vogais
+                                /\s|[A-ZÀ-ÿ]/.test(trimmedCity); // Espaços ou letras maiúsculas (para nomes compostos)
+        
+        if (!hasValidStructure && trimmedCity.length > 5) {
+            return { isValid: false, message: 'Não parece um nome de cidade válido. Verifique a digitação.' };
         }
         
         return { isValid: true, message: '' };
@@ -87,6 +108,17 @@ class WeatherApp {
             }
             
             const data = await response.json();
+            
+            // ✅ VERIFICA SE A CIDADE REALMENTE EXISTE
+            if (data.cod === '404' || data.cod === 404) {
+                throw new Error(data.message || 'Cidade não encontrada');
+            }
+            
+            // ✅ VERIFICA SE OS DADOS SÃO VÁLIDOS (não veio do mock)
+            if (this.isMockData(data)) {
+                throw new Error('Cidade não encontrada. Verifique o nome e tente novamente.');
+            }
+            
             this.displayWeatherData(data);
             
         } catch (error) {
@@ -97,8 +129,28 @@ class WeatherApp {
         }
     }
     
+    // ✅ DETECTA SE SÃO DADOS MOCK (simulados)
+    isMockData(data) {
+        // Verifica se tem campos indicativos de mock
+        const isMock = data.lastUpdated && 
+                      data.main.temp >= 20 && 
+                      data.main.temp <= 35 &&
+                      data.name === this.cityInput.value.trim();
+        
+        if (isMock) {
+            console.warn('Dados mock detectados para:', data.name);
+        }
+        
+        return isMock;
+    }
+    
     displayWeatherData(data) {
-        // Atualizar elementos com os dados recebidos
+        // ✅ GARANTE QUE OS DADOS SÃO VÁLIDOS
+        if (!data || !data.main || !data.weather) {
+            this.showError('Dados inválidos recebidos da API.');
+            return;
+        }
+        
         document.getElementById('city-name').textContent = data.name || 'Cidade desconhecida';
         document.getElementById('current-date').textContent = this.getFormattedDate();
         document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
