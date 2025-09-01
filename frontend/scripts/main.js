@@ -20,7 +20,7 @@ class WeatherApp {
         });
     }
     
-    // ✅ VALIDAÇÃO AVANÇADA PARA CIDADES REAIS
+    // ✅ VALIDAÇÃO PARA CIDADES REAIS (MANTIDA)
     isValidCityName(city) {
         const trimmedCity = city.trim();
         
@@ -49,10 +49,10 @@ class WeatherApp {
             return { isValid: false, message: 'O nome da cidade é muito longo (máx. 50 caracteres).' };
         }
         
-        // ✅ VALIDAÇÃO CONTRA NOMES ABSURDOS
+        // ✅ VALIDAÇÃO CONTRA NOMES ABSURDOS (MANTIDA)
         const invalidPatterns = [
             /(.)\1{4,}/, // Muitos caracteres repetidos (ex: kkkkk, aaaaa)
-            /^[^a-zAZÀ-ÿ]+$/, // Nenhuma letra válida
+            /^[^a-zA-ZÀ-ÿ]+$/, // Nenhuma letra válida
             /(.{3,}).*\1.*\1/, // Padrões repetitivos
             /^[xX]+$/, // Apenas X's
             /^(asdf|qwer|zxcv|teste|abcde|aaaaa|kkkkk)+$/i, // Sequências comuns inválidas
@@ -63,21 +63,13 @@ class WeatherApp {
             return { isValid: false, message: 'Por favor, digite um nome de cidade válido.' };
         }
         
-        // ✅ VERIFICA SE PARECE COM NOME DE CIDADE REAL
-        const hasValidStructure = /[aeiouÀ-ÿ]{2,}/i.test(trimmedCity) && // Pelo menos 2 vogais
-                                /\s|[A-ZÀ-ÿ]/.test(trimmedCity); // Espaços ou letras maiúsculas (para nomes compostos)
-        
-        if (!hasValidStructure && trimmedCity.length > 5) {
-            return { isValid: false, message: 'Não parece um nome de cidade válido. Verifique a digitação.' };
-        }
-        
         return { isValid: true, message: '' };
     }
     
     async getWeatherData() {
         const city = this.cityInput.value;
         
-        // ✅ VALIDAÇÃO DA CIDADE
+        // ✅ VALIDAÇÃO DA CIDADE (MANTIDA)
         const validation = this.isValidCityName(city);
         if (!validation.isValid) {
             this.showError(validation.message);
@@ -109,15 +101,13 @@ class WeatherApp {
             
             const data = await response.json();
             
-            // ✅ VERIFICA SE A CIDADE REALMENTE EXISTE
+            // ✅ VERIFICA SE A CIDADE REALMENTE EXISTE (MANTIDA)
             if (data.cod === '404' || data.cod === 404) {
                 throw new Error(data.message || 'Cidade não encontrada');
             }
             
-            // ⚠️ VERIFICAÇÃO DE MOCK DESATIVADA TEMPORARIAMENTE
-            // if (this.isMockData(data)) {
-            //     throw new Error('Cidade não encontrada. Verifique o nome e tente novamente.');
-            // }
+            // 🚫 VALIDAÇÃO DE MOCK REMOVIDA COMPLETAMENTE
+            // Todos os dados válidos da API serão mostrados
             
             this.displayWeatherData(data);
             
@@ -127,27 +117,6 @@ class WeatherApp {
         } finally {
             this.hideLoading();
         }
-    }
-    
-    // ✅ DETECTA SE SÃO DADOS MOCK (VERSÃO MELHORADA) - MANTIDA PARA FUTURO
-    isMockData(data) {
-        // Se não tem dados básicos, não é mock nem real
-        if (!data || !data.main || !data.weather) return false;
-        
-        // Dados reais da OpenWeatherMap têm estes campos
-        const hasRealDataIndicators = data.sys && data.sys.country && data.weather[0].id;
-        
-        // Dados mock têm nosso campo personalizado
-        const hasMockIndicator = data.lastUpdated;
-        
-        // É mock se tem o indicador mock mas não os indicadores reais
-        const isMock = hasMockIndicator && !hasRealDataIndicators;
-        
-        if (isMock) {
-            console.warn('Dados mock detectados para:', data.name);
-        }
-        
-        return isMock;
     }
     
     displayWeatherData(data) {
