@@ -20,11 +20,46 @@ class WeatherApp {
         });
     }
     
-    async getWeatherData() {
-        const city = this.cityInput.value.trim();
+    // ✅ NOVA FUNÇÃO: Validar nome da cidade
+    isValidCityName(city) {
+        // Remove espaços extras
+        const trimmedCity = city.trim();
         
-        if (!city) {
-            this.showError('Por favor, digite o nome de uma cidade.');
+        // Verifica se está vazio
+        if (!trimmedCity) {
+            return { isValid: false, message: 'Por favor, digite o nome de uma cidade.' };
+        }
+        
+        // Verifica se tem números
+        if (/\d/.test(trimmedCity)) {
+            return { isValid: false, message: 'O nome da cidade não pode conter números.' };
+        }
+        
+        // Verifica se tem caracteres especiais (permite acentos, hífens, espaços e apóstrofos)
+        if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(trimmedCity)) {
+            return { isValid: false, message: 'Use apenas letras, espaços, hífens e apóstrofos.' };
+        }
+        
+        // Verifica comprimento mínimo
+        if (trimmedCity.length < 2) {
+            return { isValid: false, message: 'O nome da cidade deve ter pelo menos 2 caracteres.' };
+        }
+        
+        // Verifica comprimento máximo
+        if (trimmedCity.length > 50) {
+            return { isValid: false, message: 'O nome da cidade é muito longo.' };
+        }
+        
+        return { isValid: true, message: '' };
+    }
+    
+    async getWeatherData() {
+        const city = this.cityInput.value;
+        
+        // ✅ VALIDAÇÃO DA CIDADE
+        const validation = this.isValidCityName(city);
+        if (!validation.isValid) {
+            this.showError(validation.message);
             return;
         }
         
@@ -36,13 +71,17 @@ class WeatherApp {
             const response = await fetch(`${this.apiBaseUrl}/weather/${encodeURIComponent(city)}`);
             
             if (!response.ok) {
-                // Tenta parsear a resposta de erro
                 let errorMsg = 'Cidade não encontrada';
                 try {
                     const errorData = await response.json();
                     errorMsg = errorData.error || errorMsg;
+                    
+                    // ✅ Melhor tratamento de erros da API
+                    if (errorData.details) {
+                        errorMsg += `. ${errorData.details}`;
+                    }
                 } catch (e) {
-                    // Se não conseguir parsear, usa mensagem padrão
+                    // Mantém a mensagem padrão
                 }
                 throw new Error(errorMsg);
             }
