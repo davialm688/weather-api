@@ -52,7 +52,7 @@ class WeatherApp {
         // ✅ VALIDAÇÃO CONTRA NOMES ABSURDOS
         const invalidPatterns = [
             /(.)\1{4,}/, // Muitos caracteres repetidos (ex: kkkkk, aaaaa)
-            /^[^a-zA-ZÀ-ÿ]+$/, // Nenhuma letra válida
+            /^[^a-zAZÀ-ÿ]+$/, // Nenhuma letra válida
             /(.{3,}).*\1.*\1/, // Padrões repetitivos
             /^[xX]+$/, // Apenas X's
             /^(asdf|qwer|zxcv|teste|abcde|aaaaa|kkkkk)+$/i, // Sequências comuns inválidas
@@ -114,11 +114,10 @@ class WeatherApp {
                 throw new Error(data.message || 'Cidade não encontrada');
             }
             
-            // ✅ VERIFICAÇÃO DE MOCK MELHORADA (menos agressiva)
-            if (this.isMockData(data)) {
-                console.warn('Dados mock detectados, mas mostrando mesmo assim para:', data.name);
-                // Não lança erro, apenas mostra warning
-            }
+            // ⚠️ VERIFICAÇÃO DE MOCK DESATIVADA TEMPORARIAMENTE
+            // if (this.isMockData(data)) {
+            //     throw new Error('Cidade não encontrada. Verifique o nome e tente novamente.');
+            // }
             
             this.displayWeatherData(data);
             
@@ -130,7 +129,7 @@ class WeatherApp {
         }
     }
     
-    // ✅ DETECTA SE SÃO DADOS MOCK (VERSÃO MELHORADA)
+    // ✅ DETECTA SE SÃO DADOS MOCK (VERSÃO MELHORADA) - MANTIDA PARA FUTURO
     isMockData(data) {
         // Se não tem dados básicos, não é mock nem real
         if (!data || !data.main || !data.weather) return false;
